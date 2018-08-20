@@ -6,7 +6,7 @@ import re
 import dpath.util
 import lxml
 from lxml import etree
-#from lxml import objectify
+from lxml import objectify
 import xml.etree.ElementTree as et
 #from io import StringIO
 
@@ -37,16 +37,17 @@ def market_cap(stock):
 def account_orders(account):
     quotes = tkapi.account_orders(account)
     #return loads(str(quotes))
-    #sho = dpath.util.values(quotes, '/orderstatus/order')
-    #sho = re.sub('\[\[{.*fixmlmessage.*?>', '', str(sho))
-#    sho = re.sub('^.*?>', '', str(sho))
-    #sho = re.sub('\'}\]\]', '', str(sho))
-    #e = et.fromstring(sho).getroot()
-    #for atype in e.findall('ExecRpt'):
-    #    print(atype.get('OrdID'))
+    p = re.compile('<FIXML[\s\S]*?<\/FIXML>')
+    orders = p.findall(str(quotes))
+    for order in orders:
+        fmt_order = objectify.fromstring(order)
+        objectify.deannotate(fmt_order, xsi_nil=True)
+        OrdID = fmt_order.ExecRpt.get('OrdID')
+        print(OrdID)
+        # This isn't done. We still need to sort out which OrdID is which.
+        # But this gets us a hell of a lot closer
 
 
-    print(json.dumps(quotes, indent=4, ensure_ascii=False, cls=None))
 
 tkapi = tradeking.TradeKingAPI(consumer_key=CONSUMER_KEY,
                             consumer_secret=CONSUMER_SECRET,
