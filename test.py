@@ -36,6 +36,7 @@ def market_cap(stock):
 
 def account_orders(account):
     quotes = tkapi.account_orders(account)
+    print(quotes)
     #return loads(str(quotes))
     p = re.compile('<FIXML[\s\S]*?<\/FIXML>')
     orders = p.findall(str(quotes))
