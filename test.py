@@ -36,15 +36,22 @@ def market_cap(stock):
 
 def account_orders(account):
     quotes = tkapi.account_orders(account)
-    print(quotes)
+    #print(quotes)
     #return loads(str(quotes))
     p = re.compile('<FIXML[\s\S]*?<\/FIXML>')
     orders = p.findall(str(quotes))
+    #print(orders)
     for order in orders:
         fmt_order = objectify.fromstring(order)
         objectify.deannotate(fmt_order, xsi_nil=True)
         OrdID = fmt_order.ExecRpt.get('OrdID')
+        Desc = fmt_order.ExecRpt.Instrmt.get('Desc')
+        TxnTm = fmt_order.ExecRpt.get('TxnTm')
+        Txt = fmt_order.ExecRpt.get('Txt')
+        print(Desc)
         print(OrdID)
+        print(TxnTm)
+        print(Txt)
         # This isn't done. We still need to sort out which OrdID is which.
         # But this gets us a hell of a lot closer
 
