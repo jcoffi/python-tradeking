@@ -7,21 +7,24 @@ License: AGPL (see LICENSE for details)
 
 import os
 import requests
+import yaml
 
 from requests_oauthlib import OAuth1
 
 
 ENDPOINT = 'https://api.tradeking.com/v1'
-
+conf = yaml.load(open('conf/credentials.yaml'))
 
 class TradeKingAPI(object):
     """TradeKing API client"""
 
     def __init__(self,
-                 consumer_key=os.environ.get('TK_CONSUMER_KEY'),
-                 consumer_secret=os.environ.get('TK_CONSUMER_SECRET'),
-                 oauth_token=os.environ.get('TK_OAUTH_TOKEN'),
-                 oauth_secret=os.environ.get('TK_OAUTH_SECRET')):
+                 consumer_key=conf['consumer']['ckey'],
+                 consumer_secret=conf['consumer']['csecret'],
+                 oauth_token=conf['resource']['rkey'],
+                 oauth_secret=conf['resource']['rsecret']):
+
+
 
         self.requests = requests.Session()
         self.requests.auth = OAuth1(consumer_key,
