@@ -13,16 +13,16 @@ from lxml.etree import SubElement
 from lxml.etree import tostring
 #from io import StringIO
 
-
 from requests_oauthlib import OAuth1
+from simplejson import loads
 
 import tradeking
 
 conf = yaml.load(open('conf/credentials.yaml'))
-CONSUMER_KEY = conf['consumer']['ckey']
-CONSUMER_SECRET = conf['consumer']['csecret']
-OAUTH_TOKEN = conf['resource']['rkey']
-OAUTH_SECRET = conf['resource']['rsecret']
+TRADEKING_CONSUMER_KEY = conf['consumer']['ckey']
+TRADEKING_CONSUMER_SECRET = conf['consumer']['csecret']
+TRADEKING_ACCESS_TOKEN = conf['resource']['rkey']
+TRADEKING_ACCESS_TOKEN_SECRET = conf['resource']['rsecret']
 TRADEKING_ACCOUNT_NUMBER = conf['accounts']['account']
 # The XML namespace for FIXML requests.
 FIXML_NAMESPACE = "http://www.fixprotocol.org/FIXML-5-0-SP2"
@@ -37,7 +37,7 @@ lmt = "-5"
 def get_order_url():
     """Gets the TradeKing URL for placing orders."""
 
-    url_path = "accounts/TRADEKING_ACCOUNT_NUMBER/orders"
+    url_path = "https://api.tradeking.com/v1/accounts/60792930/orders"
     return url_path
 
 def op_flag(ticker):
@@ -54,7 +54,7 @@ def market_cap(ticker):
 
 def get_account_orders(TRADEKING_ACCOUNT_NUMBER):
     quotes = tkapi.account_orders(TRADEKING_ACCOUNT_NUMBER)
-    #print(quotes)
+    print(quotes)
     #return loads(str(quotes))
     p = re.compile('<FIXML[\s\S]*?<\/FIXML>')
     orders = p.findall(str(quotes))
@@ -72,64 +72,82 @@ def get_account_orders(TRADEKING_ACCOUNT_NUMBER):
         # This isn't done. We still need to sort out which OrdID is which.
         # But this gets us a hell of a lot closer
 
-def fixml_sell_trailingstop(ticker, quantity, limit):
-    """Generates the FIXML for a trailing stop order."""
+
+def fixml_buy_now(ticker, quantity, limit):
+    """Generates the FIXML for a buy order."""
 
     fixml = Element("FIXML")
     fixml.set("xmlns", FIXML_NAMESPACE)
     order = SubElement(fixml, "Order")
     order.set("TmInForce", "0")  # Day order
-    order.set("Typ", "P")  # Trailing Stop
-    order.set("Side", "2")  # Sell
-    order.set("Acct", str(TRADEKING_ACCOUNT_NUMBER))
-    order.set("ExecInst", "a")
-    order = SubElement(fixml, "Order")
-    peginstr = SubElement(order, "PegInstr")
-    peginstr.set("OfstTyp", "1") # 0 for hard number, 1 for percentage
-    peginstr.set("PegPxTyp", "1") # 1 means last price
-    peginstr.set("OfstVal", str(limit))
+    order.set("Typ", "2")  # Limit
+    order.set("Side", "1")  # Buy
+    order.set("Px", "7")  # Limit price
+    order.set("Acct", "60792930")
     instrmt = SubElement(order, "Instrmt")
-    instrmt.set("SecTyp", "OPT")  # Option or Stock
+    instrmt.set("SecTyp", "CS")  # Common stock
     instrmt.set("Sym", ticker)
     ord_qty = SubElement(order, "OrdQty")
     ord_qty.set("Qty", str(quantity))
 
     return tostring(fixml)
 
-def make_order_request(fixml):
-    """Executes an order defined by FIXML and verifies the response."""
+# def fixml_sell_trailingstop(ticker, quantity, limit):
+#     """Generates the FIXML for a trailing stop options order."""
+#
+#     fixml = Element("FIXML")
+#     fixml.set("xmlns", FIXML_NAMESPACE)
+#     order = SubElement(fixml, "Order")
+#     order.set("TmInForce", "0")  # Day order
+#     order.set("Typ", "P")  # Trailing Stop
+#     order.set("Side", "2")  # Sell
+#     order.set("Acct", str(TRADEKING_ACCOUNT_NUMBER))
+#     order.set("ExecInst", "a")  # Can contain multiple instructions, space delimited. If OrdType=P, exactly one of the following values (ExecInst = L, R, M, P, O, T, or W) must be specified.
+#     peginstr = SubElement(order, "PegInstr")
+#     peginstr.set("OfstTyp", "0") # 0 for hard number, 1 for percentage
+#     peginstr.set("PegPxTyp", "1") # 1 means last price
+#     peginstr.set("OfstVal", "-5")
+#     instrmt = SubElement(order, "Instrmt")
+#     instrmt.set("CFI", "OC") # Options Contracts
+#     instrmt.set("SecTyp", "OPT")  # Option or Stock
+#     instrmt.set("MatDt", "2018-09-21T00:00:00.000-05:00")
+#     instrmt.set("Sym", ticker)
+#     ord_qty = SubElement(order, "OrdQty")
+#     ord_qty.set("Qty", "500")
+#
+#     return tostring(fixml)
 
-    response = tkapi.account_order(account_id=TRADEKING_ACCOUNT_NUMBER,order=fixml)
+def make_request(url, method="GET", body="", headers=None):
+    """Makes a request to the TradeKing API."""
 
-    if not response:
-        print("No order response for: %s" % fixml)
-        return False
+
+    print("TradeKing request: %s %s %s %s" %
+                    (url, method, body, headers))
+
+    content = tkapi.account_order_preview(TRADEKING_ACCOUNT_NUMBER,fixml)
+
+    #response,
+
+    response = content
+
+    print("TradeKing response: %s %s" % (response, content))
 
     try:
-        order_response = response["response"]
-        error = order_response["error"]
-    except KeyError:
-        print("Malformed order response: %s" % response)
-        return False
+        return loads(content)
+    except ValueError:
+        print("Failed to decode JSON response: %s" % content)
+        return None
 
-    # The error field indicates whether the order succeeded.
-    error = order_response["error"]
-    if error != "Success":
-        print("Error in order response: %s %s" %
-                        (error, order_response))
-        return False
-
-    return True
+tkapi = tradeking.TradeKingAPI(consumer_key=TRADEKING_CONSUMER_KEY,
+                            consumer_secret=TRADEKING_CONSUMER_SECRET,
+                            oauth_token=TRADEKING_ACCESS_TOKEN,
+                            oauth_secret=TRADEKING_ACCESS_TOKEN_SECRET)
 
 
-tkapi = tradeking.TradeKingAPI(consumer_key=CONSUMER_KEY,
-                            consumer_secret=CONSUMER_SECRET,
-                            oauth_token=OAUTH_TOKEN,
-                            oauth_secret=OAUTH_SECRET)
-
-
-fixml = fixml_sell_trailingstop(ticker2, qty, lmt)
-make_order_request(fixml)
-#get_account_orders(TRADEKING_ACCOUNT_NUMBER)
+#fixml = fixml_sell_trailingstop(ticker2, qty, lmt)
+fixml = fixml_buy_now(ticker2, qty, lmt)
+make_request(fixml)
+print(fixml)
+#get_account_orders(60792930)
 #op_flag(str(ticker))
 #market_cap(str(ticker))
