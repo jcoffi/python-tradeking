@@ -65,57 +65,62 @@ def get_account_orders(TRADEKING_ACCOUNT_NUMBER):
         Desc = fmt_order.ExecRpt.Instrmt.get('Desc')
         TxnTm = fmt_order.ExecRpt.get('TxnTm')
         Txt = fmt_order.ExecRpt.get('Txt')
-        print(Desc)
+        #print(Desc)
         #print(OrdID)
-        print(TxnTm)
-        print(Txt)
+        #print(TxnTm)
+        #print(Txt)
         # This isn't done. We still need to sort out which OrdID is which.
         # But this gets us a hell of a lot closer
 
 
-def fixml_buy_now(ticker, quantity, limit):
-    """Generates the FIXML for a buy order."""
-
-    fixml = Element("FIXML")
-    fixml.set("xmlns", FIXML_NAMESPACE)
-    order = SubElement(fixml, "Order")
-    order.set("TmInForce", "0")  # Day order
-    order.set("Typ", "2")  # Limit
-    order.set("Side", "1")  # Buy
-    order.set("Px", "7")  # Limit price
-    order.set("Acct", "60792930")
-    instrmt = SubElement(order, "Instrmt")
-    instrmt.set("SecTyp", "CS")  # Common stock
-    instrmt.set("Sym", ticker)
-    ord_qty = SubElement(order, "OrdQty")
-    ord_qty.set("Qty", str(quantity))
-
-    return tostring(fixml)
-
-# def fixml_sell_trailingstop(ticker, quantity, limit):
-#     """Generates the FIXML for a trailing stop options order."""
+# def fixml_buy_now(ticker, quantity, limit):
+#     """Generates the FIXML for a buy order."""
 #
 #     fixml = Element("FIXML")
 #     fixml.set("xmlns", FIXML_NAMESPACE)
 #     order = SubElement(fixml, "Order")
 #     order.set("TmInForce", "0")  # Day order
-#     order.set("Typ", "P")  # Trailing Stop
-#     order.set("Side", "2")  # Sell
-#     order.set("Acct", str(TRADEKING_ACCOUNT_NUMBER))
-#     order.set("ExecInst", "a")  # Can contain multiple instructions, space delimited. If OrdType=P, exactly one of the following values (ExecInst = L, R, M, P, O, T, or W) must be specified.
-#     peginstr = SubElement(order, "PegInstr")
-#     peginstr.set("OfstTyp", "0") # 0 for hard number, 1 for percentage
-#     peginstr.set("PegPxTyp", "1") # 1 means last price
-#     peginstr.set("OfstVal", "-5")
+#     order.set("Typ", "2")  # Limit
+#     order.set("Side", "1")  # Buy
+#     order.set("Px", "7")  # Limit price
+#     order.set("Acct", "60792930")
 #     instrmt = SubElement(order, "Instrmt")
-#     instrmt.set("CFI", "OC") # Options Contracts
-#     instrmt.set("SecTyp", "OPT")  # Option or Stock
-#     instrmt.set("MatDt", "2018-09-21T00:00:00.000-05:00")
+#     instrmt.set("SecTyp", "CS")  # Common stock
 #     instrmt.set("Sym", ticker)
 #     ord_qty = SubElement(order, "OrdQty")
-#     ord_qty.set("Qty", "500")
+#     ord_qty.set("Qty", str(quantity))
 #
 #     return tostring(fixml)
+
+def fixml_sell_trailingstop(ticker, quantity, limit):
+    """Generates the FIXML for a trailing stop options order."""
+
+    fixml = Element("FIXML")
+    fixml.set("xmlns", FIXML_NAMESPACE)
+    order = SubElement(fixml, "Order")
+    order.set("TmInForce", "0")  # Day order
+    order.set("Typ", "P")  # Trailing Stop
+    order.set("Side", "2")  # Sell
+    order.set("PosEfct", "C") # Needed for options "O" is for Open and "C" is for closing
+    order.set("Acct", "60792930")
+    order.set("ExecInst", "a")  # Can contain multiple instructions, space delimited. If OrdType=P, exactly one of the following values (ExecInst = L, R, M, P, O, T, or W) must be specified.
+    peginstr = SubElement(order, "PegInstr")
+    peginstr.set("OfstTyp", "1") # 0 for hard number, 1 for percentage
+    peginstr.set("PegPxTyp", "1") # 1 means last price
+    peginstr.set("OfstVal", "20")
+    instrmt = SubElement(order, "Instrmt")
+    instrmt.set("CFI", "OC") # Options Contracts
+    instrmt.set("SecTyp", "OPT")  # Option or Stock
+    instrmt.set("StrkPx", "10")
+    instrmt.set("MMY", "201809")
+    instrmt.set("MatDt", "2018-09-21T00:00:00.000-05:00")
+    instrmt.set("Sym", ticker)
+    undly = SubElement(order, "Undly")
+    undly.set("Sym", ticker)
+    ord_qty = SubElement(order, "OrdQty")
+    ord_qty.set("Qty", "1")
+
+    return tostring(fixml)
 
 def make_request(url, method="GET", body="", headers=None):
     """Makes a request to the TradeKing API."""
@@ -143,11 +148,11 @@ tkapi = tradeking.TradeKingAPI(consumer_key=TRADEKING_CONSUMER_KEY,
                             oauth_token=TRADEKING_ACCESS_TOKEN,
                             oauth_secret=TRADEKING_ACCESS_TOKEN_SECRET)
 
-
+#testoptions = tkapi.market_options_expirations("VSTM")
+#print(testoptions)
 #fixml = fixml_sell_trailingstop(ticker2, qty, lmt)
-fixml = fixml_buy_now(ticker2, qty, lmt)
-make_request(fixml)
-print(fixml)
-#get_account_orders(60792930)
+#make_request(fixml)
+#print(fixml)
+get_account_orders(60792930)
 #op_flag(str(ticker))
 #market_cap(str(ticker))
