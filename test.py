@@ -53,7 +53,7 @@ def market_cap(ticker):
     return mktcap
 
 def get_account_orders(TRADEKING_ACCOUNT_NUMBER):
-    quotes = tkapi.account_orders(TRADEKING_ACCOUNT_NUMBER)
+    quotes = tkapi.account_orders_preview(TRADEKING_ACCOUNT_NUMBER)
     print(quotes)
     #return loads(str(quotes))
     p = re.compile('<FIXML[\s\S]*?<\/FIXML>')
@@ -106,8 +106,8 @@ def fixml_sell_trailingstop(ticker, quantity, limit):
     order.set("ExecInst", "a")  # Can contain multiple instructions, space delimited. If OrdType=P, exactly one of the following values (ExecInst = L, R, M, P, O, T, or W) must be specified.
     peginstr = SubElement(order, "PegInstr")
     peginstr.set("OfstTyp", "1") # 0 for hard number, 1 for percentage
-    peginstr.set("PegPxTyp", "1") # 1 means last price
-    peginstr.set("OfstVal", "20")
+    peginstr.set("PegPxTyp", "0") # 1 means last price
+    peginstr.set("OfstVal", ".50")
     instrmt = SubElement(order, "Instrmt")
     instrmt.set("CFI", "OC") # Options Contracts
     instrmt.set("SecTyp", "OPT")  # Option or Stock
@@ -115,8 +115,8 @@ def fixml_sell_trailingstop(ticker, quantity, limit):
     instrmt.set("MMY", "201809")
     instrmt.set("MatDt", "2018-09-21T00:00:00.000-05:00")
     instrmt.set("Sym", ticker)
-    undly = SubElement(order, "Undly")
-    undly.set("Sym", ticker)
+    #undly = SubElement(order, "Undly")
+    #undly.set("Sym", ticker)
     ord_qty = SubElement(order, "OrdQty")
     ord_qty.set("Qty", "1")
 
@@ -129,19 +129,19 @@ def make_request(url, method="GET", body="", headers=None):
     print("TradeKing request: %s %s %s %s" %
                     (url, method, body, headers))
 
-    content = tkapi.account_order_preview(TRADEKING_ACCOUNT_NUMBER,fixml)
+    content = tkapi.account_order(TRADEKING_ACCOUNT_NUMBER,fixml)
 
     #response,
+    print(content)
+    # response = content
 
-    response = content
+    #print("TradeKing response: %s %s" % (response, content))
 
-    print("TradeKing response: %s %s" % (response, content))
-
-    try:
-        return loads(content)
-    except ValueError:
-        print("Failed to decode JSON response: %s" % content)
-        return None
+    # try:
+    #     return json.loads(content.decode("utf-8"))
+    # except ValueError:
+    #     print("Failed to decode JSON response: %s" % content)
+    #     return None
 
 tkapi = tradeking.TradeKingAPI(consumer_key=TRADEKING_CONSUMER_KEY,
                             consumer_secret=TRADEKING_CONSUMER_SECRET,
@@ -150,9 +150,9 @@ tkapi = tradeking.TradeKingAPI(consumer_key=TRADEKING_CONSUMER_KEY,
 
 #testoptions = tkapi.market_options_expirations("VSTM")
 #print(testoptions)
-#fixml = fixml_sell_trailingstop(ticker2, qty, lmt)
-#make_request(fixml)
-#print(fixml)
-get_account_orders(60792930)
+fixml = fixml_sell_trailingstop(ticker2, qty, lmt)
+print(fixml)
+make_request(fixml)
+#get_account_orders(60792930)
 #op_flag(str(ticker))
 #market_cap(str(ticker))
