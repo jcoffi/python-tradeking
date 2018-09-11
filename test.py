@@ -101,9 +101,9 @@ def fixml_sell_trailingstop(ticker, quantity, limit):
     order.set("TmInForce", "0")  # Day order
     order.set("Typ", "P")  # Trailing Stop
     order.set("Side", "2")  # Sell
-    order.set("PosEfct", "C") # Needed for options "O" is for Open and "C" is for closing
+    order.set("PosEfct", "C") # Needed for options. "O" is for Open and "C" is for closing
     order.set("Acct", "60792930")
-    order.set("ExecInst", "a")  # Can contain multiple instructions, space delimited. If OrdType=P, exactly one of the following values (ExecInst = L, R, M, P, O, T, or W) must be specified.
+    order.set("ExecInst", "a")  # Can contain multiple instructions, space delimited. If OrdType=P, exactly one of the following values (ExecInst = L, R, M, P, O, T, W, a, d) must be specified.
     peginstr = SubElement(order, "PegInstr")
     peginstr.set("OfstTyp", "1") # 0 for hard number, 1 for percentage
     peginstr.set("PegPxTyp", "0") # 1 means last price
