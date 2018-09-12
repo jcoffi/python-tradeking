@@ -9,7 +9,7 @@ import os
 import requests
 import yaml
 
-from requests_oauthlib import OAuth1
+import rauth as OAuth1
 
 
 ENDPOINT = 'https://api.tradeking.com/v1'
