@@ -13,7 +13,7 @@ from lxml.etree import SubElement
 from lxml.etree import tostring
 #from io import StringIO
 
-from rauth import OAuth1
+from requests_oauthlib import OAuth1
 from simplejson import loads
 
 import tradeking
