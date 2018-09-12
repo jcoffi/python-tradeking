@@ -17,7 +17,7 @@ setup(
     platforms='any',
     install_requires=[
         'requests',
-        'rauth',
+        'requests-oauthlib',
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
