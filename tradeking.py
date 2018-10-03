@@ -9,7 +9,7 @@ import os
 import requests
 import yaml
 
-from requests_oauthlib import OAuth1
+from rauth import OAuth1Service
 
 
 ENDPOINT = 'https://api.tradeking.com/v1'
@@ -22,24 +22,28 @@ class TradeKingAPI(object):
                  consumer_key=conf['consumer']['ckey'],
                  consumer_secret=conf['consumer']['csecret'],
                  oauth_token=conf['resource']['rkey'],
-                 oauth_secret=conf['resource']['rsecret']):
+                 oauth_secret=conf['resource']['rsecret'],
+                 base_url='https://api.tradeking.com/v1',
+                 session_obj=self):             
 
-
-
-        self.requests = requests.Session()
-        self.requests.auth = OAuth1(consumer_key,
-                                    consumer_secret,
-                                    oauth_token,
-                                    oauth_secret)
+                 """Use the keys to instantiate a session"""
+                 auth = OAuth1Session(
+                 				name='tradeking',
+                                consumer_key=conf['consumer']['ckey'],
+                                consumer_secret=conf['consumer']['csecret'],
+                                oauth_token=conf['resource']['rkey'],
+                                oauth_secret=conf['resource']['rsecret'],
+                                base_url='https://api.tradeking.com/v1',
+                                session_obj=self)
 
     def _get(self, request, params=None):
         """HTTP GET request"""
-        url = '%s/%s.json' % (ENDPOINT, request)
+        url = '%s/%s.json' % (ENDPOINT, request) #This will need to be rewritten to use rauth. Right now this will generate a TypeError: 'OAuth1Service' object is not callable error.
         return self.requests.get(url, params=params).json().get('response')
 
     def _post(self, request, data):
         """HTTP POST request"""
-        url = '%s/%s.json' % (ENDPOINT, request)
+        url = '%s/%s.json' % (ENDPOINT, request) #This will need to be rewritten to use rauth. Right now this will generate a TypeError: 'OAuth1Service' object is not callable error.
         return self.requests.post(url, data=data).json().get('response')
 
     def accounts(self):
