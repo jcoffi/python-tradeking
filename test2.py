@@ -6,6 +6,7 @@ ALLY_ACCESS_TOKEN = conf['resource']['rkey']
 ALLY_ACCESS_TOKEN_SECRET = conf['resource']['rsecret']
 ALLY_ACCOUNT_NUMBER = conf['accounts']['account']
 import dpath.util
+import sys
 from rauth import OAuth1Session
 
 ally = OAuth1Session(
@@ -15,7 +16,7 @@ ally = OAuth1Session(
         access_token_secret=ALLY_ACCESS_TOKEN_SECRET
         )
 
-params = {'symbols': ('VSTM'), 'fids': 'last,pvol,sho',
+params = {'symbols': (str(sys.argv[1])), 'fids': 'last,pvol,sho',
           #'consumer_key': ALLY_CONSUMER_KEY,
           #'consumer_secret': ALLY_CONSUMER_SECRET,
           #'access_token': ALLY_ACCESS_TOKEN,
@@ -34,4 +35,6 @@ def market_cap(ticker):
     sho = dpath.util.get(quotes, "/quotes/quote/sho"),
     last = dpath.util.get(quotes, "/quotes/quote/last"),
     mktcap = (int(float(sho)) * int(float(last)))
-    return mktcap
+    return int(mktcap)
+
+print(market_cap)
