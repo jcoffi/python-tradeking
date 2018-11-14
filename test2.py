@@ -30,8 +30,8 @@ r = ally.get('https://api.tradeking.com/v1/market/ext/quotes.json',
 print(r.json())
 
 def market_cap(ticker):
-    quotes = r = ally.get('https://api.tradeking.com/v1/market/ext/quotes.json',
-    sho = dpath.util.get(quotes, "/quotes/quote/sho")
-    last = dpath.util.get(quotes, "/quotes/quote/last")
+    quotes = r = ally.get('https://api.tradeking.com/v1/market/ext/quotes.json'),
+    sho = dpath.util.get(quotes, "/quotes/quote/sho"),
+    last = dpath.util.get(quotes, "/quotes/quote/last"),
     mktcap = (int(float(sho)) * int(float(last)))
     return mktcap
