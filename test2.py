@@ -16,25 +16,23 @@ ally = OAuth1Session(
         access_token_secret=ALLY_ACCESS_TOKEN_SECRET
         )
 
-params = {'symbols': (str(sys.argv[1])), 'fids': 'last,pvol,sho',
-          #'consumer_key': ALLY_CONSUMER_KEY,
-          #'consumer_secret': ALLY_CONSUMER_SECRET,
-          #'access_token': ALLY_ACCESS_TOKEN,
-          #'access_token_secret': ALLY_ACCESS_TOKEN_SECRET,
-#          'request_token_url': ALLY_REQUEST_TOKEN_URL,
-#          'access_token_url': ALLY_ACCESS_TOKEN_RETRIEVAL_URL,
-#          'authorize_url': ALLY_USER_AUTHORIZATION_URL,
+ticker = str(sys.argv[1])
+
+params = {'symbols': (ticker), 'fids': 'last,pvol,sho',
           'base_url': 'https://api.tradeking.com/v1/'
          }
 r = ally.get('https://api.tradeking.com/v1/market/ext/quotes.json',
              params=params)
 print(r.json())
 
+#def op_flag(ticker):
+#    quotes = r = ally.get('https://api.tradeking.com/v1/market/ext/quotes.json'),
+#    isopt = dpath.util.get(quotes, "/quotes/quote/op_flag"),
+#    return isopt
+
 def market_cap(ticker):
     quotes = r = ally.get('https://api.tradeking.com/v1/market/ext/quotes.json'),
     sho = dpath.util.get(quotes, "/quotes/quote/sho"),
     last = dpath.util.get(quotes, "/quotes/quote/last"),
-    mktcap = (int(float(sho)) * int(float(last)))
-    return int(mktcap)
-
-print(market_cap)
+    mktcap = (int(float(sho)) * int(float(last))),
+    return mktcap
