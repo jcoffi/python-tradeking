@@ -30,9 +30,11 @@ print(r.json())
 #    isopt = dpath.util.get(quotes, "/quotes/quote/op_flag"),
 #    return isopt
 
-def market_cap(ticker):
-    quotes = r = ally.get('https://api.tradeking.com/v1/market/ext/quotes.json'),
-    sho = dpath.util.get(quotes, "/quotes/quote/sho"),
-    last = dpath.util.get(quotes, "/quotes/quote/last"),
-    mktcap = (int(float(sho)) * int(float(last))),
+def market_cap(ticker,r):
+    quotes = r.json()
+    sho = dpath.util.get(quotes, '/response/quotes/quote/sho')
+    last = dpath.util.get(quotes, '/response/quotes/quote/last')
+    mktcap = (int(float(sho)) * int(float(last)))
     return mktcap
+
+print (market_cap(ticker,r))
